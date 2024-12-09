@@ -2,6 +2,7 @@ import { getUserFromPassport } from "@/app/auth/signin/utils";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
+  console.log(request.headers.get('Authorization'))
   const token = request.headers.get('Authorization')?.split(' ')[1];
 
   if (!token) {
@@ -12,9 +13,8 @@ export async function GET(request: NextRequest) {
     const user = await getUserFromPassport(token);
 
     return NextResponse.json(user);
-  } catch (error) {
-    console.log(error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  } catch (error: unknown) {
+    return NextResponse.json({ error: error instanceof Error ? error.message : 'Internal server error' }, { status: 500 })
   }
 
 }

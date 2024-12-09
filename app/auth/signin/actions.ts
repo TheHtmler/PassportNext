@@ -2,7 +2,7 @@
 
 import { v4 as uuidv4 } from "uuid";
 import { formSchema } from "./utils";
-import { getGlobalAuthorizationTickets } from "@/lib/auth";
+import { kv } from '@/lib/kv'
 
 export async function signIn(account: string, password: string) {
   try {
@@ -18,11 +18,7 @@ export async function signIn(account: string, password: string) {
     }
 
     const ticket = uuidv4();
-    const authorizationTickets = getGlobalAuthorizationTickets();
-    authorizationTickets.set(ticket, {
-      account,
-      timestamp: Date.now(),
-    });
+    await kv.set(`auth:${ticket}`, { account }, { ex: 60 * 5 }); // 5 minutes
 
     return { success: true, ticket };
   } catch (error) {
@@ -32,7 +28,6 @@ export async function signIn(account: string, password: string) {
 }
 
 export async function authenticateWithPassport(account: string, password: string) {
-  console.log(account, password)
   await new Promise(resolve => setTimeout(resolve, 1500))
 
   return account === "19900000000" && password === "123";

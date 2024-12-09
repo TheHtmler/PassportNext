@@ -1,8 +1,7 @@
 import { authenticateWithPassport } from "@/app/auth/signin/actions";
 import { NextRequest, NextResponse } from "next/server";
 import { v4 as uuidv4 } from "uuid";
-
-const authorizationTickets = new Map();
+import { kv } from '@/lib/kv'
 
 export async function POST(request: NextRequest) {
   const { account, password } = await request.json();
@@ -15,10 +14,7 @@ export async function POST(request: NextRequest) {
     }
 
     const ticket = uuidv4();
-    authorizationTickets.set(ticket, {
-      account,
-      timestamp: Date.now(),
-    });
+    await kv.set(`auth:${ticket}`, { account }, { ex: 60 * 5 }); // 5 minutes
 
     return NextResponse.json({ ticket });
   } catch (error) {
